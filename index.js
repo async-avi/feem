@@ -1,10 +1,12 @@
 import "dotenv/config";
 import Discord from "discord.js";
+import axios from "axios";
 
 const app = new Discord.Client({
   intents: [
     Discord.GatewayIntentBits.Guilds,
     Discord.GatewayIntentBits.GuildMessages,
+    Discord.GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -12,10 +14,14 @@ app.on("ready", () => {
   console.log(`Logged in as ${app.user.tag}!`);
 });
 
-app.on("message", (msg) => {
-  if (msg == "ping") {
-    const timeTaken = Date.now() - message.createdTimestamp;
-    message.reply(`Pong! This message had a latency of ${timeTaken}ms.`);
+app.on("messageCreate", async (msg) => {
+  if (msg.content === "/joke") {
+    const joke = await axios.get(
+      "https://v2.jokeapi.dev/joke/Dark?blacklistFlags=nsfw&type=single"
+    );
+    const data = await joke.data;
+    console.log(data);
+    msg.reply(`${data.joke}`);
   }
 });
 
