@@ -1,28 +1,26 @@
 import "dotenv/config";
-import Discord from "discord.js";
-import axios from "axios";
+import { Client, GatewayIntentBits } from "discord.js";
+import slashRegister from "./src/registerSlash.js";
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const app = new Discord.Client({
-  intents: [
-    Discord.GatewayIntentBits.Guilds,
-    Discord.GatewayIntentBits.GuildMessages,
-    Discord.GatewayIntentBits.MessageContent,
-  ],
+client.on("ready", async () => {
+  await slashRegister();
+  console.log(`Logged in as ${client.user.tag}!`);
 });
 
-app.on("ready", () => {
-  console.log(`Logged in as ${app.user.tag}!`);
-});
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
 
-app.on("messageCreate", async (msg) => {
-  if (msg.content === "/joke") {
-    const joke = await axios.get(
-      "https://v2.jokeapi.dev/joke/Dark?blacklistFlags=nsfw&type=single"
-    );
-    const data = await joke.data;
-    console.log(data);
-    msg.reply(`${data.joke}`);
+  if (interaction.commandName === "ping") {
+    await interaction.reply("Pong!");
+  } else if (interaction.commandName === "boop") {
+    await interaction.reply("Booped! :smile_cat:");
+  } else if (interaction.commandName === "joke") {
+    const joke = await fetch(
+      "https://official-joke-api.appspot.com/random_joke"
+    ).then((res) => res.json());
+    await interaction.reply(joke.setup + "\n" + joke.punchline);
   }
 });
 
-app.login(process.env.CLIENT_TOKEN);
+client.login(process.env.CLIENT_TOKEN);
